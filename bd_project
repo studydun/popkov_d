@@ -1,0 +1,114 @@
+create table house(
+	house_id serial primary key,
+	streat_name varchar(30) not null,
+	house_number integer not null
+)
+
+create table client(
+	client_id serial primary key,
+	name varchar(20) not null,
+	surname varchar(20) not null,
+	patronymic varchar(30),
+	house_id integer references house(house_id) not null,
+	apartment_number integer not null
+)
+
+create table service(
+	service_id serial primary key,
+	name varchar(20) not null
+)
+
+create table tariff(
+	tariff_id serial primary key,
+	service integer references service(service_id) not null,
+	_date date,
+	cost numeric
+)
+
+create table consumption(
+	cons_id serial primary key,
+	_date date,
+	client integer references client(client_id),
+	service integer references service(service_id),
+	amount numeric
+)
+
+
+
+
+
+insert into house (streat_name, house_number)
+values 	('Университетская', '1'),
+		('Университетская', '2'),
+		('Университетская', '5'),
+		('Пушкина', '17'),
+		('Калатушкина', '213')
+
+insert into client (name, surname, patronymic, house_id, apartment_number)
+values 	('Филипп', 'Давыдов', 'Владимирович', 4, 17),
+		('Дмитрий', 'Нестеров', 'Анатольевич', 3, 15),
+		('Адриан', 'Захаров', 'Анатольевич', 4, 18),
+		('Игорь', 'Карпов', 'Владимирович', 1, 2),
+		('Юлия', 'Мухина', 'Эдуардовна', 2, 3)
+		
+insert into service (name)
+values 	('Вода'),
+		('Свет'),
+		('Газ'),
+		('Отопление')
+	
+insert into tariff (service, _date, cost)
+values 	(1, '01-10-2021', 30),
+		(2, '01-10-2021', 5),
+		(3, '01-10-2021', 8),
+		(4, '01-10-2021', 1700)
+
+insert into consumption (_date, client, service, amount)
+values ('01-10-2021', 1, 1, 10),
+	   ('01-10-2021', 1, 2, 100),
+	   ('01-10-2021', 1, 3, 5),
+	   ('01-10-2021', 1, 4, 0.8),
+	   ('01-10-2021', 2, 1, 11),
+	   ('01-10-2021', 2, 2, 200),
+	   ('01-10-2021', 2, 3, 1),
+	   ('01-10-2021', 2, 4, 2),
+	   ('01-10-2021', 3, 1, 7),
+	   ('01-10-2021', 3, 2, 150),
+	   ('01-10-2021', 3, 3, 10),
+	   ('01-10-2021', 3, 4, 1.5)
+	   
+insert into consumption (_date, client, service, amount)
+values ('01-10-2021', 5, 4, 5)
+
+delete from consumption
+where service = 4 and amount > 3
+
+update consumption
+set amount = 11.11
+where client = 1 and service = 1
+
+
+
+
+
+--сумма потребления воды всеми клиентами за месяц
+select sum(amount)
+from consumption
+where service = 1 and _date = '01-10-2021'
+
+--колво домов на улице университетская 
+select count(house_id)
+from house
+where streat_name = 'Университетская'
+
+--клинты отсортированные по возрастанию потребления воды за месяц
+select client, amount
+from consumption
+where service = 1
+order by amount
+
+--клиенты отсортированные по убыванию платы за месяц
+select client, c.service, amount, cost, (amount*cost) as price
+from consumption c, tariff t
+where c.service = t.service
+order by price desc
